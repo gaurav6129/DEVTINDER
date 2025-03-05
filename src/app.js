@@ -1,37 +1,68 @@
-console.log("i am gaurav rai this is my first project");
-
-
-const express=require('express');
-const connectDB=require('./config/database');
-const app=express();
-app.get("/index",(req,res)=>{
-    // res.send("My first Get API");
-    res.send({first_name:"Gaurav",Last_name:"Rai",Age:25,Address:"Lucknow"});
+const express = require("express");
+const connectDB = require("./config/database");
+const app = express();
+const User = require("./models/user");
+const user = require("./models/user");
+app.use(express.json());
+app.post("/signup", async (req, res) => {
+  const user = new User(req.body);
+  // const user=new User({
+  //   firstName:"Gaurav",
+  //   lastName:"Rai",
+  //   emailId:"at6269803@gmail.com",
+  //   password:"12345688"
+  // });
+  //Save the data into the database
+  try {
+    await user.save();
+    res.send("Data saved successfully");
+  } catch (err) {
+    res.status(400).send("Error in saving data:" + err.message);
+  }
+  //await user.save()
+  //res.send("Data saved successfully");
 });
-app.post("/index",(req,res)=>{
-    res.send("My first Post API");
+//get the user by emailId
+app.get("/users", async (req, res) => {
+  const userEmail = req.body.emailId;
+  try {
+    const users = await user.find({ emailId: userEmail });
+    //req.send(user);
+    if (users.length == 0) {
+      res.status(400).send("User not found");
+    } else {
+      res.send(users);
+    }
+  } catch (err) {
+    res.status(400).send("Error in fetching data:" + err.message);
+  }
+  //  const users= await user.find({emailId:userEmail})
+  //  req.send(users );
+});
+// Feed Api -Get / feed  get all the users from the database
+app.get("/feed",(req,res)=>{
+  try{
+    const users=User.find({});
+    res.send(users);
+  }
+  catch(err){
+    res.status(400).send("Error in fetching data:"+err.message);
+  }
+  // const users=User.find({})
+  // res.send(users);
 
 });
-app.delete("/index",(req,res)=>{
-    res.send("Delete successfully");
-});
+connectDB()
+  .then(() => {
+    console.log("Connected to the database");
+    app.listen(3000, () => {
+      console.log("server is running at port number 3000");
+    });
+  })
+  .catch((err) => {
+    console.error("Error in connecting to the database");
+  });
 
-
-
-
-
-app.use("/hello",(req,res)=>{
-    res.send("hey Gaurav what i am help you");
-    // res.send({first_name:"Gaurav",Last_name:"Rai"});
-
-});
-app.use("/world",(req,res)=>{
-    res.send("hey Gaurav What happend");
-
-});
-app.use("/home",(req,res)=>{
-    res.send("hey roy kya kar rhha hai tu");
-})
-app.listen(3000,()=>{
-    console.log("server is running at port number 3000");
-});
+// app.listen(3000,()=>{
+//     console.log("server is running at port number 3000");
+// });

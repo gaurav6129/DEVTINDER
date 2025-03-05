@@ -1,5 +1,6 @@
 const express=require('express')
 const app=express();
+
 // app.get("/index",(req,res)=>{
 //     res.send({firstname:'Gaurav',Lastname:'Rai',age:25})
 // });
@@ -23,6 +24,6 @@ app.use("/user",(req,res,next)=>{
 
 
 
-app.listen(3000,()=>{
-    console.log("server is running at port number 3000");
-});
+// app.listen(3000,()=>{
+//     console.log("server is running at port number 3000");
+// });
