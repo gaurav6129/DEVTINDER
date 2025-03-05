@@ -2,6 +2,7 @@ console.log("i am gaurav rai this is my first project");
 
 
 const express=require('express');
+const connectDB=require('./config/database');
 const app=express();
 app.get("/index",(req,res)=>{
     // res.send("My first Get API");
