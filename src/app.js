@@ -64,18 +64,28 @@ app.get("/feed", (req, res) => {
     }
   });
 });
-app.delete("/user",async(req,res)=>{
-  const userId=req.body.userId;
-  try{
-    const user= await User.findByIdAndDelete(userId);
+//delete by user for use userId from the database
+app.delete("/user", async (req, res) => {
+  const userId = req.body.userId;
+  try {
+    const user = await User.findByIdAndDelete(userId);
     res.send("User deleted successfully");
+  } catch {
+    res.status(400).send("Error in deleting user:" + err.message);
   }
-  catch{
-    res.status(400).send("Error in deleting user:"+err.message);
-
+});
+//update the user by userId from the database
+app.patch("/user", async (req, res) => {
+  const userId = req.body.userId;
+  const data = req.body;
+  try {
+    await User.findByIdAndUpdate({ _id: userId }, data,{ returnDocument: "after" });
+    res.send("User updated successfully");
+  } 
+  catch (err) {
+    res.status(400).send("Error in updating user:" + err.message);
   }
-})
-
+});
 
 connectDB()
   .then(() => {
