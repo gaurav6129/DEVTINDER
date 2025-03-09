@@ -2,25 +2,45 @@ const express = require("express");
 const connectDB = require("./config/database");
 const app = express();
 const User = require("./models/user");
-const user = require("./models/user");
+const { validateSignUpData } = require("./utils/validation");
+const bcrypt = require("bcrypt");
 app.use(express.json());
 app.post("/signup", async (req, res) => {
-  const user = new User(req.body);
-  // const user=new User({
-  //   firstName:"Gaurav",
-  //   lastName:"Rai",
-  //   emailId:"at6269803@gmail.com",
-  //   password:"12345688"
-  // });
-  //Save the data into the database
+  //validate the data
   try {
+    validateSignUpData(req);
+    const { firstName, lastName, emailId, rollNumber, password } = req.body;
+    //encrypt the password
+    const passwordHash = await bcrypt.hash(password, 10);
+    const user = new User({
+      firstName,
+      lastName,
+      emailId,
+      rollNumber,
+      password: passwordHash,
+    });
     await user.save();
     res.send("Data saved successfully");
   } catch (err) {
-    res.status(400).send("Error in saving data:" + err.message);
+    res.status(400).send("ERROR :" + err.message);
   }
-  //await user.save()
-  //res.send("Data saved successfully");
+});
+app.post("/login", async (req, res) => {
+  try {
+    const { emailId, password } = req.body;
+    const user = await User.findOne({ emailId: emailId });
+    if (!user) {
+      throw new Error("invaild credentials");
+    }
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (isPasswordValid) {
+      res.send("Login success!!");
+    } else {
+      throw new Error("invaild credentials");
+    }
+  } catch (err) {
+    res.status(400).send("Error in login:" + err.message);
+  }
 });
 //get the user by emailId
 app.get("/users", async (req, res) => {
@@ -37,33 +57,33 @@ app.get("/users", async (req, res) => {
     res.status(400).send("Error in fetching data:" + err.message);
   }
   //  const users= await user.find({emailId:userEmail})
-  //  req.send(users );
 });
-// Feed Api -Get / feed  get all the users from the database
-app.get("/feed", (req, res) => {
+app.get("/feed", async (req, res) => {
   try {
-    const users = User.find({});
+    const users = await User.find({});
     res.send(users);
   } catch (err) {
     res.status(400).send("Error in fetching data:" + err.message);
   }
-  // const users=User.find({})
-  // res.send(users);
-  app.get("/feed", async (req, res) => {
-    try {
-      const user = await User.findOne({});
-      if (!user) {
-        res.status(400).send("User not found");
-      } else {
-        res.send(user);
-      }
-
-      res.send(users);
-    } catch (err) {
-      res.status(400).send("error in fetching data:" + err.message);
-    }
-  });
 });
+// const users=User.find({})
+// res.send(users);
+// Feed Api -Get / feed  get all the users from the database
+// app.get("/feed", async (req, res) => {
+//   try {
+//     const user = await User.findOne({});
+//     if (!user) {
+//       res.status(400).send("User not found");
+//     } else {
+//       res.send(user);
+//     }
+
+//     res.send(users);
+//   } catch (err) {
+//     res.status(400).send("error in fetching data:" + err.message);
+//   }
+// });
+
 //delete by user for use userId from the database
 app.delete("/user", async (req, res) => {
   const userId = req.body.userId;

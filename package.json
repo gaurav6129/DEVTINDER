@@ -16,6 +16,7 @@
   "author": "Gaurav Rai",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "express": "^4.21.2",
     "expressjs": "^1.0.1",
     "mongoose": "^8.11.0",
