@@ -2,11 +2,14 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const userSchema = mongoose.Schema(
+
+const userSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
       required: true,
+      minLength: 4,
+      maxLength: 50,
     },
     lastName: {
       type: String,
@@ -19,7 +22,7 @@ const userSchema = mongoose.Schema(
       trim: true,
       validate(value) {
         if (!validator.isEmail(value)) {
-          throw new Error("Email is invalid :" + value);
+          throw new Error("Invalid email address: " + value);
         }
       },
     },
@@ -28,7 +31,7 @@ const userSchema = mongoose.Schema(
       required: true,
       validate(value) {
         if (!validator.isStrongPassword(value)) {
-          throw new Error("please type strong password :" + value);
+          throw new Error("Enter a Strong Password: " + value);
         }
       },
     },
@@ -36,18 +39,24 @@ const userSchema = mongoose.Schema(
       type: Number,
       min: 18,
     },
-    rollNumber: {
-      type: String,
-      required: true,
-    },
-
     gender: {
       type: String,
-      validate(value) {
-        if (!["male", "female", "others"].includes(value)) {
-          throw new Error("gender data is invalid ");
-        }
+      enum: {
+        values: ["male", "female", "other"],
+        message: `{VALUE} is not a valid gender type`,
       },
+      // validate(value) {
+      //   if (!["male", "female", "others"].includes(value)) {
+      //     throw new Error("Gender data is not valid");
+      //   }
+      // },
+    },
+    isPremium: {
+      type: Boolean,
+      default: false,
+    },
+    membershipType: {
+      type: String,
     },
     photoUrl: {
       type: String,
@@ -60,7 +69,7 @@ const userSchema = mongoose.Schema(
     },
     about: {
       type: String,
-      default: "This is default about user",
+      default: "This is a default about of the user!",
     },
     skills: {
       type: [String],
@@ -70,6 +79,7 @@ const userSchema = mongoose.Schema(
     timestamps: true,
   }
 );
+
 userSchema.methods.getJWT = async function () {
   const user = this;
 
@@ -91,4 +101,5 @@ userSchema.methods.validatePassword = async function (passwordInputByUser) {
 
   return isPasswordValid;
 };
+
 module.exports = mongoose.model("User", userSchema);
